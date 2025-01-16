@@ -1,0 +1,97 @@
+version: "3.9"
+services:
+  auction-postgres:
+    image: postgres:17-alpine
+    container_name: auction-postgres
+    environment:
+      POSTGRES_USER: ${AUCTION_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${AUCTION_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${AUCTION_POSTGRES_DB}
+      POSTGRES_PORT: ${AUCTION_POSTGRES_PORT}
+    ports:
+      - "5432:5432" # Remove in production
+    volumes:
+      - auction_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AUCTION_POSTGRES_USER} -d ${AUCTION_POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  user-postgres:
+    image: postgres:17-alpine
+    container_name: user-postgres
+    environment:
+      POSTGRES_USER: ${USER_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${USER_POSTGRES_PASSWORD}
+      USER_POSTGRES_DB: ${USER_POSTGRES_DB}
+      USER_POSTGRES_PORT: ${USER_POSTGRES_PORT}
+    ports:
+      - "5433:5433" # Remove in production
+    volumes:
+      - user_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USER_POSTGRES_USER} -d ${USER_POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  auction-management:
+    build:
+      context: ./auction-management-service
+      target: development
+      args:
+        SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_AUCTION}
+        SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_AUCTION}
+        SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_AUCTION}
+        SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+        SERVER_PORT: ${SERVER_PORT_AUCTION}
+    container_name: auction-management-service
+    ports:
+      - "${SERVER_PORT_AUCTION}:${SERVER_PORT_AUCTION}"
+    depends_on:
+      auction-postgres:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      SPRING_DATASOURCE_URL_AUCTION: ${SPRING_DATASOURCE_URL_AUCTION}
+      SPRING_DATASOURCE_USERNAME_AUCTION: ${SPRING_DATASOURCE_USERNAME_AUCTION}
+      SPRING_DATASOURCE_PASSWORD_AUCTION: ${SPRING_DATASOURCE_PASSWORD_AUCTION}
+    volumes:
+      - ./auction-management-service/src:/app/src
+      - ./auction-management-service/pom.xml:/app/pom.xml
+      - ~/.m2:/root/.m2
+    command: mvn spring-boot:run
+
+  user-management:
+    build:
+      context: ./user-management-service
+      target: development
+      args:
+        SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_USER}
+        SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_USER}
+        SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_USER}
+        SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+        SERVER_PORT: ${SERVER_PORT_USER}
+    container_name: user-management-service
+    ports:
+      - "${SERVER_PORT_USER}:${SERVER_PORT_USER}"
+    depends_on:
+      user-postgres:
+        condition: service_healthy
+    restart: on-failure
+    environment:
+      SPRING_DATASOURCE_URL_USER: ${SPRING_DATASOURCE_URL_USER}
+      SPRING_DATASOURCE_USERNAME_USER: ${SPRING_DATASOURCE_USERNAME_USER}
+      SPRING_DATASOURCE_PASSWORD_USER: ${SPRING_DATASOURCE_PASSWORD_USER}
+    volumes:
+      - ./user-management-service/src:/app/src
+      - ./user-management-service/pom.xml:/app/pom.xml
+      - ~/.m2:/root/.m2
+    command: mvn spring-boot:run
+
+volumes:
+  auction_postgres_data:
+  user_postgres_data:
