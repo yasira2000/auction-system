@@ -9,15 +9,16 @@ services:
       POSTGRES_DB: ${AUCTION_POSTGRES_DB}
       POSTGRES_PORT: ${AUCTION_POSTGRES_PORT}
     ports:
-      - "5432:5432" # Remove in production
+      - "5432:5432"
     volumes:
       - auction_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${AUCTION_POSTGRES_USER} -d ${AUCTION_POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${AUCTION_POSTGRES_USER} -d ${AUCTION_POSTGRES_DB} -p ${AUCTION_POSTGRES_PORT}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
+    command: ["postgres", "-p", "${AUCTION_POSTGRES_PORT}"]
 
   user-postgres:
     image: postgres:17-alpine
@@ -25,18 +26,20 @@ services:
     environment:
       POSTGRES_USER: ${USER_POSTGRES_USER}
       POSTGRES_PASSWORD: ${USER_POSTGRES_PASSWORD}
-      USER_POSTGRES_DB: ${USER_POSTGRES_DB}
-      USER_POSTGRES_PORT: ${USER_POSTGRES_PORT}
+      POSTGRES_DB: ${USER_POSTGRES_DB}
+      POSTGRES_PORT: ${USER_POSTGRES_PORT}
     ports:
-      - "5433:5433" # Remove in production
+      - "5433:5433"
     volumes:
       - user_postgres_data:/var/lib/postgresql/data
+      - ./user-management-service/sql/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${USER_POSTGRES_USER} -d ${USER_POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${USER_POSTGRES_USER} -d ${USER_POSTGRES_DB} -p ${USER_POSTGRES_PORT}"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
+    command: ["postgres", "-p", "${USER_POSTGRES_PORT}"]
 
   auction-management:
     build:
@@ -59,6 +62,7 @@ services:
       SPRING_DATASOURCE_URL_AUCTION: ${SPRING_DATASOURCE_URL_AUCTION}
       SPRING_DATASOURCE_USERNAME_AUCTION: ${SPRING_DATASOURCE_USERNAME_AUCTION}
       SPRING_DATASOURCE_PASSWORD_AUCTION: ${SPRING_DATASOURCE_PASSWORD_AUCTION}
+      SERVER_PORT: ${SERVER_PORT_AUCTION}
     volumes:
       - ./auction-management-service/src:/app/src
       - ./auction-management-service/pom.xml:/app/pom.xml
@@ -86,6 +90,7 @@ services:
       SPRING_DATASOURCE_URL_USER: ${SPRING_DATASOURCE_URL_USER}
       SPRING_DATASOURCE_USERNAME_USER: ${SPRING_DATASOURCE_USERNAME_USER}
       SPRING_DATASOURCE_PASSWORD_USER: ${SPRING_DATASOURCE_PASSWORD_USER}
+      SERVER_PORT: ${SERVER_PORT_USER}
     volumes:
       - ./user-management-service/src:/app/src
       - ./user-management-service/pom.xml:/app/pom.xml

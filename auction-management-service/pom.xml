@@ -8,7 +8,7 @@
 		<version>3.4.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.yasira.microservices</groupId>
+	<groupId>com.yasira.auction</groupId>
 	<artifactId>auction-management-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>auction-management-service</name>

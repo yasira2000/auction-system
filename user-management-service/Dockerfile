@@ -19,5 +19,12 @@ ENTRYPOINT ["/entrypoint.sh"]
 # Development stage
 FROM eclipse-temurin:21-jdk-alpine AS development
 WORKDIR /app
+# Install dependencies and Maven
+RUN apk add --no-cache bash curl tar && \
+    curl -fsSL https://dlcdn.apache.org/maven/maven-3/3.9.4/binaries/apache-maven-3.9.4-bin.tar.gz | tar -xz -C /opt && \
+    ln -s /opt/apache-maven-3.9.4/bin/mvn /usr/bin/mvn
+
+# Verify Maven installation
+RUN mvn -version
 COPY pom.xml .
 COPY src ./src
