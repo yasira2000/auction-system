@@ -1,4 +1,4 @@
-package com.yasira.microservices.auction_management_service;
+package com.yasira.auction.auctionmanagementservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
