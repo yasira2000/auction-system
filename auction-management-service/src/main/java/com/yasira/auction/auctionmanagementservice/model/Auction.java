@@ -1,13 +1,10 @@
-package com.yasira.microservices.auctionmanagementservice.model;
+package com.yasira.auction.auctionmanagementservice.model;
 
-import com.yasira.auction.utils.AuctionStatus;
+import com.yasira.auction.auctionenum.AuctionStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -17,6 +14,7 @@ import java.util.List;
 @Table(name = "auction")
 @Setter
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Auction {
@@ -79,5 +77,6 @@ public class Auction {
     @ManyToOne
     @JoinColumn(name = "seller_id", referencedColumnName = "seller_id")
     private Seller seller;
+
 
 }
