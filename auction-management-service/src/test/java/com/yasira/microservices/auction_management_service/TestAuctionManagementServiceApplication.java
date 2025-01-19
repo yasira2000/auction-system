@@ -1,5 +1,6 @@
 package com.yasira.microservices.auction_management_service;
 
+import com.yasira.auction.auctionmanagementservice.AuctionManagementServiceApplication;
 import org.springframework.boot.SpringApplication;
 
 public class TestAuctionManagementServiceApplication {
